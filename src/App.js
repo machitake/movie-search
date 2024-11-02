@@ -23,17 +23,20 @@ function MovieSearch() {
   // 映画の詳細情報のローディング状態
   const [isLoadingDetails, setIsLoadingDetails] = useState(false); 
 
+  // モーダル表示（映画詳細データ取得）
   const handleMovieClick = (movie) => {
     setSelectedMovie(movie);
     setIsModalOpen(true);
     fetchMovieDetails(movie.id);
   };
 
+  // モーダル閉じる
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedMovie(null);
   };
 
+  // 映画検索
   const searchMovies = useCallback((page) => {
     const apiKey = process.env.REACT_APP_TMDB_API_KEY;
     // 映画検索
@@ -42,10 +45,12 @@ function MovieSearch() {
       .then(data => {
         setMovies(data.results);
         setTotalPages(data.total_pages);
+        scrollToTop();
       })
       .catch(error => console.error('Error:', error));
   }, [query]);
 
+  // 映画詳細データ取得
   const fetchMovieDetails = useCallback((movieId) => {
     setIsLoadingDetails(true);
   
@@ -69,14 +74,24 @@ function MovieSearch() {
     });
   }, []);
 
+  // 映画検索
   useEffect(() => {
     if (query) {
       searchMovies(currentPage);
     }
   }, [currentPage, searchMovies, query]);
 
+  // ページ変更
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);
+  };
+
+  // ページ変更時にトップにスクロール
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   const handleInputChange = (event) => {
@@ -87,7 +102,7 @@ function MovieSearch() {
   return (
     <div className='movie-search-container'>
       <h1>映画検索</h1>
-      
+
       {/* 検索バー */}
       <SearchBar query={query} onInputChange={handleInputChange} />
 
@@ -108,7 +123,7 @@ function MovieSearch() {
       <Pagination 
         currentPage={currentPage} 
         totalPages={totalPages} 
-        onPageChange={handlePageChange} 
+        handlePageChange={handlePageChange} 
       />
     </div>
   );

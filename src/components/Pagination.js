@@ -1,28 +1,22 @@
 import React from 'react';
 
-export default function Pagination({ currentPage, totalPages, onPageChange }) {
+export default function Pagination({ currentPage, totalPages, handlePageChange }) {
 
+  // 前のページ
   const handlePrevPage = () => {
     if (currentPage > 1) {
-      onPageChange(currentPage - 1);
-      scrollToTop();
+      handlePageChange(currentPage - 1);
     }
   };
 
+  // 次のページ
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      onPageChange(currentPage + 1);
-      scrollToTop();
+      handlePageChange(currentPage + 1);
     }
   };
 
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
-  };
-
+  // ページがない場合はnullを返す
   if (totalPages === 0) {
     return null;
   }
