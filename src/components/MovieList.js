@@ -1,7 +1,6 @@
-// MovieList.js
 import React from 'react';
 import MovieItem from './MovieItem';
-
+import './MovieList.css';
 const MovieList = ({ movies, onMovieClick }) => {
   return (
     <ul className="movie-list">

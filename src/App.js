@@ -10,6 +10,8 @@ function MovieSearch() {
   const [query, setQuery] = useState('');
   //映画のリスト
   const [movies, setMovies] = useState([]);
+  //言語
+  const [language, setLanguage] = useState('ja-JP');
   //現在のページ
   const [currentPage, setCurrentPage] = useState(1);
   //総ページ数
@@ -36,43 +38,49 @@ function MovieSearch() {
     setSelectedMovie(null);
   };
 
-  // 映画検索
-  const searchMovies = useCallback((page) => {
-    const apiKey = process.env.REACT_APP_TMDB_API_KEY;
     // 映画検索
-    fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${query}&language=ja-JP&page=${page}`)
-      .then(res => res.json())
-      .then(data => {
-        setMovies(data.results);
-        setTotalPages(data.total_pages);
-        scrollToTop();
+    const searchMovies = useCallback((page) => {
+      const apiKey = process.env.REACT_APP_TMDB_API_KEY;
+      // 言語に応じてエンドポイントを変更
+      fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${query}&language=${language}&page=${page}`)
+        .then(res => res.json())
+        .then(data => {
+          setMovies(data.results);
+          setTotalPages(data.total_pages);
+          scrollToTop();
+        })
+        .catch(error => console.error('Error:', error));
+    }, [query, language]);
+  
+    // 映画詳細データ取得
+    const fetchMovieDetails = useCallback((movieId) => {
+      setIsLoadingDetails(true);
+    
+      const apiKey = process.env.REACT_APP_TMDB_API_KEY;
+    
+      Promise.all([
+        fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&language=${language}`),
+        fetch(`https://api.themoviedb.org/3/movie/${movieId}/credits?api_key=${apiKey}&language=${language}`)
+      ])
+      .then(([detailsRes, creditsRes]) => {
+        return Promise.all([detailsRes.json(), creditsRes.json()]);
       })
-      .catch(error => console.error('Error:', error));
-  }, [query]);
+      .then(([details, credits]) => {
+        setMovieDetails({ details, credits: credits.cast });
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      })
+      .finally(() => {
+        setIsLoadingDetails(false);
+      });
+    }, [language]);
 
-  // 映画詳細データ取得
-  const fetchMovieDetails = useCallback((movieId) => {
-    setIsLoadingDetails(true);
-  
-    const apiKey = process.env.REACT_APP_TMDB_API_KEY;
-  
-    Promise.all([
-      fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&language=ja-JP`),
-      fetch(`https://api.themoviedb.org/3/movie/${movieId}/credits?api_key=${apiKey}&language=ja-JP`)
-    ])
-    .then(([detailsRes, creditsRes]) => {
-      return Promise.all([detailsRes.json(), creditsRes.json()]);
-    })
-    .then(([details, credits]) => {
-      setMovieDetails({ details, credits: credits.cast });
-    })
-    .catch(error => {
-      console.error('Error:', error);
-    })
-    .finally(() => {
-      setIsLoadingDetails(false);
-    });
-  }, []);
+  const handleLanguageChange = (newLanguage) => {
+    setLanguage(newLanguage);
+    setCurrentPage(1); // ページを1に戻す
+    searchMovies(1); // 新しい言語で検索
+  };
 
   // 映画検索
   useEffect(() => {
@@ -94,8 +102,8 @@ function MovieSearch() {
     });
   };
 
-  const handleInputChange = (event) => {
-    setQuery(event.target.value);
+  const handleInputChange = (query) => {
+    setQuery(query);
     setCurrentPage(1);
   };
 
@@ -104,7 +112,7 @@ function MovieSearch() {
       <h1>映画検索</h1>
 
       {/* 検索バー */}
-      <SearchBar query={query} onInputChange={handleInputChange} />
+      <SearchBar query={query} onInputChange={handleInputChange} onLanguageChange={handleLanguageChange} />
 
       {/* 映画一覧 */}
       <MovieList movies={movies} onMovieClick={handleMovieClick} />
