@@ -23,6 +23,10 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
     });
   };
 
+  if (totalPages === 0) {
+    return null;
+  }
+
   return (
     <div>
       <button onClick={handlePrevPage} disabled={currentPage === 1}>前へ</button>

@@ -2,6 +2,8 @@ import './App.css';
 import React, { useState, useEffect, useCallback } from 'react';
 import Pagination from './components/Pagination';
 import MovieModal from './components/MovieModal';
+import MovieList from './components/MovieList';
+
 function MovieSearch() {
   //検索キーワード
   const [query, setQuery] = useState('');
@@ -56,8 +58,6 @@ function MovieSearch() {
       return Promise.all([detailsRes.json(), creditsRes.json()]);
     })
     .then(([details, credits]) => {
-      console.log('Movie Details:', details);
-      console.log('Movie Credits:', credits);
       setMovieDetails({ details, credits: credits.cast });
     })
     .catch(error => {
@@ -95,21 +95,10 @@ function MovieSearch() {
         />
       </div>
 
-      <ul className="movie-list">
-        {movies.map(movie => (
-          <li className="movie-item" key={movie.id} onClick={() => handleMovieClick(movie)} >
-            <img 
-              src={`https://image.tmdb.org/t/p/original/${movie.poster_path}`} 
-              alt={movie.title} 
-            />
-            <h3>{movie.title}</h3>
-            <p>{movie.overview}</p>
-            <p>リリース日: {movie.release_date}</p>
-          </li>
-        ))}
-      </ul>
+      {/* 映画一覧 */}
+      <MovieList movies={movies} onMovieClick={handleMovieClick} />
 
-      {/* モーダルコンポーネントを追加 */}
+      {/* モーダルコンポーネント */}
       {isModalOpen && (
         <MovieModal 
           movie={selectedMovie}
@@ -119,6 +108,7 @@ function MovieSearch() {
         />
       )}
 
+      {/* ページネーションコンポーネント */}
       <Pagination 
         currentPage={currentPage} 
         totalPages={totalPages} 
