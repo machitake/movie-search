@@ -15,10 +15,15 @@ function MovieSearch() {
   const [selectedMovie, setSelectedMovie] = useState(null);
   //モーダルの表示状態
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // 映画の詳細情報 
+  const [movieDetails, setMovieDetails] = useState(null);  
+  // 映画の詳細情報のローディング状態
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false); 
 
   const handleMovieClick = (movie) => {
     setSelectedMovie(movie);
     setIsModalOpen(true);
+    fetchMovieDetails(movie.id);
   };
 
   const handleCloseModal = () => {
@@ -28,6 +33,7 @@ function MovieSearch() {
 
   const searchMovies = useCallback((page) => {
     const apiKey = process.env.REACT_APP_TMDB_API_KEY;
+    // 映画検索
     fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${query}&language=ja-JP&page=${page}`)
       .then(res => res.json())
       .then(data => {
@@ -36,6 +42,31 @@ function MovieSearch() {
       })
       .catch(error => console.error('Error:', error));
   }, [query]);
+
+  const fetchMovieDetails = useCallback((movieId) => {
+    setIsLoadingDetails(true);
+  
+    const apiKey = process.env.REACT_APP_TMDB_API_KEY;
+  
+    Promise.all([
+      fetch(`https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&language=ja-JP`),
+      fetch(`https://api.themoviedb.org/3/movie/${movieId}/credits?api_key=${apiKey}&language=ja-JP`)
+    ])
+    .then(([detailsRes, creditsRes]) => {
+      return Promise.all([detailsRes.json(), creditsRes.json()]);
+    })
+    .then(([details, credits]) => {
+      console.log('Movie Details:', details);
+      console.log('Movie Credits:', credits);
+      setMovieDetails({ details, credits: credits.cast });
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    })
+    .finally(() => {
+      setIsLoadingDetails(false);
+    });
+  }, []);
 
   useEffect(() => {
     if (query) {
@@ -83,6 +114,8 @@ function MovieSearch() {
         <MovieModal 
           movie={selectedMovie}
           onClose={handleCloseModal}
+          movieDetails={movieDetails}
+          isLoadingDetails={isLoadingDetails}
         />
       )}
 
