@@ -1,4 +1,5 @@
 import React from 'react';
+import './Pagination.css';
 
 export default function Pagination({ currentPage, totalPages, handlePageChange }) {
 
@@ -22,10 +23,10 @@ export default function Pagination({ currentPage, totalPages, handlePageChange }
   }
 
   return (
-    <div>
-      <button onClick={handlePrevPage} disabled={currentPage === 1}>前へ</button>
-      <span>ページ {currentPage} / {totalPages}</span>
-      <button onClick={handleNextPage} disabled={currentPage === totalPages || totalPages === 0}>次へ</button>
+    <div className="pagination">
+      <button className="prev-btn" onClick={handlePrevPage} disabled={currentPage === 1}>前へ</button>
+      <span className="page-info">ページ {currentPage} / {totalPages}</span>
+      <button className="next-btn" onClick={handleNextPage} disabled={currentPage === totalPages || totalPages === 0}>次へ</button>
     </div>
   );
 }
