@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Pagination from './components/Pagination';
 import MovieModal from './components/MovieModal';
 import MovieList from './components/MovieList';
+import SearchBar from './components/SearchBar';
 
 function MovieSearch() {
   //検索キーワード
@@ -86,14 +87,9 @@ function MovieSearch() {
   return (
     <div className='movie-search-container'>
       <h1>映画検索</h1>
-      <div className="search-bar">
-        <input 
-          type="text" 
-          value={query} 
-          onChange={handleInputChange} 
-          placeholder="映画を検索"
-        />
-      </div>
+      
+      {/* 検索バー */}
+      <SearchBar query={query} onInputChange={handleInputChange} />
 
       {/* 映画一覧 */}
       <MovieList movies={movies} onMovieClick={handleMovieClick} />
