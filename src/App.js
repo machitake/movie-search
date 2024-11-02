@@ -1,7 +1,7 @@
 import './App.css';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Pagination from './components/Pagination';
-
+import MovieModal from './components/MovieModal';
 function MovieSearch() {
   //検索キーワード
   const [query, setQuery] = useState('');
@@ -11,37 +11,45 @@ function MovieSearch() {
   const [currentPage, setCurrentPage] = useState(1);
   //総ページ数
   const [totalPages, setTotalPages] = useState(0);
+  //選択された映画
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  //モーダルの表示状態
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  //ページ変更用の関数
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
+  const handleMovieClick = (movie) => {
+    setSelectedMovie(movie);
+    setIsModalOpen(true);
   };
 
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedMovie(null);
+  };
 
-  //映画を検索する関数
-  const searchMovies = (page) => {
+  const searchMovies = useCallback((page) => {
     const apiKey = process.env.REACT_APP_TMDB_API_KEY;
     fetch(`https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${query}&language=ja-JP&page=${page}`)
       .then(res => res.json())
       .then(data => {
         setMovies(data.results);
-        // console.log(data.results);
         setTotalPages(data.total_pages);
-        // console.log(data.total_pages);
       })
       .catch(error => console.error('Error:', error));
+  }, [query]);
+
+  useEffect(() => {
+    if (query) {
+      searchMovies(currentPage);
+    }
+  }, [currentPage, searchMovies, query]);
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
   };
 
-  //currentPageが変更されたときに映画を検索
-  useEffect(() => {
-    searchMovies(currentPage);
-  }, [currentPage]);
-
-  //入力のたびにsetQueryを更新
   const handleInputChange = (event) => {
     setQuery(event.target.value);
     setCurrentPage(1);
-    searchMovies(1);
   };
 
   return (
@@ -58,18 +66,25 @@ function MovieSearch() {
 
       <ul className="movie-list">
         {movies.map(movie => (
-          <li className="movie-item" key={movie.id} onClick={() => console.log(movie)}>
-            {/* ポスター画像 */}
-            <img src={`https://image.tmdb.org/t/p/original/${movie.poster_path}`} alt={movie.title} />
-            {/* タイトル */}
+          <li className="movie-item" key={movie.id} onClick={() => handleMovieClick(movie)} >
+            <img 
+              src={`https://image.tmdb.org/t/p/original/${movie.poster_path}`} 
+              alt={movie.title} 
+            />
             <h3>{movie.title}</h3>
-            {/* 概要 */}
             <p>{movie.overview}</p>
-            {/* リリース日 */}
-            <p>{movie.release_date}</p>
+            <p>リリース日: {movie.release_date}</p>
           </li>
         ))}
       </ul>
+
+      {/* モーダルコンポーネントを追加 */}
+      {isModalOpen && (
+        <MovieModal 
+          movie={selectedMovie}
+          onClose={handleCloseModal}
+        />
+      )}
 
       <Pagination 
         currentPage={currentPage} 
