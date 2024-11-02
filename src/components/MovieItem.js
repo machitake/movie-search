@@ -8,7 +8,7 @@ const MovieItem = ({ movie, onMovieClick }) => {
         alt={movie.title} 
       />
       <h3>{movie.title}</h3>
-      <p>{movie.overview}</p>
+      <p>{movie.overview.slice(0, 100)}...</p>
       <p>リリース日: {movie.release_date}</p>
     </li>
   );
